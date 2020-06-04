@@ -37,18 +37,15 @@ export default class FileBrowser extends React.Component {
     renderFolder(directory, path = "") {
         let tree = directory.map((i, key) => {
             if(i.type == "file") {
-                return (<TouchableHighlight key={key} style={{padding: 3}}>
+                return (<TouchableHighlight key={key} style={{padding: 3}} underlayColor="transparent" onPress={() => this.props.openFile(i)}>
                             <View style={{flexDirection: "row", alignItems: "center"}}>
                                 <Icon name="description" size={18} color="#bdbdbd" style={{marginRight: 5}}/>
-                                <Text ellipsizeMode='tail' style={{fontSize: 18, color: '#FFF'}} numberOfLines={1} onPress={() => this.props.openFile(i)}>{i.file}</Text>
+                                <Text ellipsizeMode='tail' style={{fontSize: 18, color: '#FFF'}} numberOfLines={1}>{i.file}</Text>
                             </View>
                         </TouchableHighlight>)
             } else {
                 return (<View key={key} style={{flexDirection: "column"}}>
-                    <TouchableHighlight style={{padding: 3}}>
-                        <View style={{flexDirection: "row", alignItems: "center"}}>
-                            <Icon name={[...this.state.folders].findIndex(z => z.name == `${path}/${i.file}` && z.showing == true) != -1 ? "folder-open" : "folder"} size={18} color="#bdbdbd" style={{marginRight: 5}}/>
-                            <Text ellipsizeMode='tail' style={{fontSize: 18, color: '#FFF'}} numberOfLines={1} onPress={() => {
+                    <TouchableHighlight style={{padding: 3}} underlayColor="transparent" onPress={() => {
                                 const loc = [...this.state.folders].findIndex(z => {
                                     return z.name == `${path}/${i.file}`
                                 });
@@ -57,7 +54,10 @@ export default class FileBrowser extends React.Component {
 
                                 this.setState({folders: newState}, () => {
                                 })
-                            }}>{i.file}</Text>
+                            }}>
+                        <View style={{flexDirection: "row", alignItems: "center"}} >
+                            <Icon name={[...this.state.folders].findIndex(z => z.name == `${path}/${i.file}` && z.showing == true) != -1 ? "folder-open" : "folder"} size={18} color="#bdbdbd" style={{marginRight: 5}}/>
+                            <Text ellipsizeMode='tail' style={{fontSize: 18, color: '#FFF'}} numberOfLines={1}>{i.file}</Text>
                         </View>
                     </TouchableHighlight>
                     {[...this.state.folders].findIndex(z => z.name == `${path}/${i.file}` && z.showing == true) != -1 && [...directory].find(z => {
