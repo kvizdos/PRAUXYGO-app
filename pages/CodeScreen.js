@@ -18,7 +18,7 @@ export default class CodeScreen extends React.Component {
 
   createFolderStateStructure(directory, path = "", folders = [], i = 0) {
     const dir = directory.shift();
-    if(dir.type != "file") {
+    if(dir != undefined && dir.type != "file") {
       folders.push({name: path + "/" + dir.file, showing: false});
       folders.push(...this.createFolderStateStructure(dir.contents, path + "/" + dir.file, [], i++));
     }

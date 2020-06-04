@@ -60,7 +60,9 @@ export default class FileBrowser extends React.Component {
                             }}>{i.file}</Text>
                         </View>
                     </TouchableHighlight>
-                    {[...this.state.folders].findIndex(z => z.name == `${path}/${i.file}` && z.showing == true) != -1 && <View style={{marginLeft: 18}}>
+                    {[...this.state.folders].findIndex(z => z.name == `${path}/${i.file}` && z.showing == true) != -1 && [...directory].find(z => {
+                            return z.file == i.file
+                        }).contents.length > 0 && <View style={{marginLeft: 18}}>
                         {this.renderFolder([...directory].find(z => {
                             return z.file == i.file
                         }).contents, path + "/" + i.file)}
