@@ -12,7 +12,12 @@ export default class WebPreview extends React.Component {
             devToolsOpen: this.props.devToolsOpen,
             showInspector: false,
             showConsole: true,
-            consoleMessages: []
+            consoleMessages: [],
+            consoleHistory: [],
+            consoleHistoryLocation: -1,
+            activeKeys: "",
+            lastAction: undefined,
+            isHoldingShortcut: false
         }
     }
     
@@ -42,21 +47,72 @@ export default class WebPreview extends React.Component {
 
     submitCommand = (e) => {
         const CMD = e.nativeEvent.text.replace(/‘/gm, "'").replace(/[“”]/gm, '"');
-        const localActions = ["clear"];
+        const localActions = ["clear", ""];
 
         if(!localActions.includes(CMD)) {
             this.setState({consoleMessages: [...this.state.consoleMessages, {message: CMD, type: "command"}]})
             this.webview.postMessage(JSON.stringify({action: "cmd", cmd: CMD}))
         } else {
             switch(CMD) {
+                case "":
+                    break;
                 case "clear":
                     this.setState({consoleMessages: [{message: "Console cleared", type: "command"}]});
                     break;
             }
         }
 
+        this.setState({consoleHistory: [...this.state.consoleHistory, CMD]});
+        this.setState({consoleHistoryLocation: this.state.consoleHistory.length})
+        this.setState({activeKeys: ""})
+
         this.cmdInput.clear();
     };
+
+    detectKeybind = (e) => {
+        this.setState({activeKeys: `${e}`})
+
+        const text = e;
+        const activeKeys = `${text}`.slice(-2);
+
+        if(this.state.isHoldingShortcut && activeKeys.slice(0, 1) == "`") {
+            switch(activeKeys.slice(1)) {
+                case ",":
+                    if(this.state.consoleHistoryLocation != -1) {
+                        this.setState({activeKeys: this.state.consoleHistory[this.state.consoleHistoryLocation]});
+                        let ns = this.state.consoleHistoryLocation.valueOf();
+                        ns -= 1;
+                        if(this.state.consoleHistoryLocation != 0) this.setState({consoleHistoryLocation: ns})
+                    } else {
+                        this.setState({activeKeys: text.substring(0, text.length - 2)})
+                    }
+
+                    break;
+                case ".":
+                    if(this.state.consoleHistoryLocation != this.state.consoleHistory.length - 1) {
+                        this.setState({activeKeys: this.state.consoleHistory[this.state.consoleHistoryLocation += 1]});
+                        if(this.state.consoleHistoryLocation != this.state.consoleHistory.length - 1) {
+                            this.setState({consoleHistoryLocation: this.state.consoleHistoryLocation})
+                        } 
+                    } else {
+                        this.setState({consoleHistoryLocation: this.state.consoleHistory.length - 1})
+
+                        this.setState({activeKeys: ""})
+                    }
+
+                    break;
+            }
+
+            this.setState({isHoldingShortcut: false});
+        } else {
+            if(activeKeys.length > 1 ? activeKeys.slice(1) == "`" : activeKeys == "`") {
+                this.setState({shortcutTimeout: setTimeout(() => {
+                    this.setState({isHoldingShortcut: false})
+                }, 250)})
+                this.setState({isHoldingShortcut: true});
+            }
+        }
+    }
 
     componentDidMount() {
         this.webview.postMessage("hello")
@@ -112,7 +168,7 @@ export default class WebPreview extends React.Component {
                                     </View>
                             })}
                         </ScrollView>
-                        <TextInput placeholder="Enter a command" ref={input => { this.cmdInput = input }} numberOfLines={1} autoCorrect={false} autoCapitalize="none" fontSize={16} style={styles.consoleEnter} onSubmitEditing={this.submitCommand} />
+                        <TextInput onChangeText={this.detectKeybind} value={this.state.activeKeys} onplaceholder="Enter a command" ref={input => { this.cmdInput = input }} numberOfLines={1} autoCorrect={false} autoCapitalize="none" fontSize={16} style={styles.consoleEnter} onSubmitEditing={this.submitCommand} />
                     </View>}
                 </View>}
             </View>

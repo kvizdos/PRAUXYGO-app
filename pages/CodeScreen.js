@@ -32,12 +32,10 @@ export default class CodeScreen extends React.Component {
   }
 
   componentDidMount() {
-    const _this = this;
     fetch("http://192.168.86.48:8080/prauxyapi")
     .then((resp) => resp.json())
     .then(files => {
       const folders = this.createFolderStateStructure(JSON.parse(JSON.stringify(files)));
-      // console.log(folders)
       this.setState({files: JSON.parse(JSON.stringify(files)), folders: folders})
     })
   }
@@ -46,8 +44,6 @@ export default class CodeScreen extends React.Component {
       if(this.state.openedTabs.findIndex(i => i.file == file.file) == -1) {
         this.setState({
           openedTabs: [...this.state.openedTabs, file]
-        }, () => {
-          // console.log(this.state.openedTabs)
         })
       }
     }
