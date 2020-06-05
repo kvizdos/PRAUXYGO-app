@@ -50,14 +50,21 @@ export default class Editor extends React.Component {
     }
 
     render() {
+        let lineNumbers = [];
+        for(let i = 0; i < this.state.activeFile.contents.split("\n").length; i++) {
+            lineNumbers.push(<Text style={{color: "#FFF", paddingLeft: 5, margin: 0, paddingBottom: 0}} key={i}>{i + 1}</Text>)
+        }
         return(
             <View style={{flex: 1, backgroundColor: "#252c33", position: 'relative', zIndex: 10}}>
                 <View style={{height: 40,backgroundColor: "#6c7782"}}>
                     <Tabs tabs={this.state.tabs} openAction={this.openFile} closeAction={this.closeFile}></Tabs>
                 </View>
-                <View style={{flex: 1}}>
+                <View style={{flex: 1, flexDirection: "row"}}>
                     <ScrollView horizontal={true} style={{flexDirection: "column"}} ref={ref => this.codeEditor = ref } onContentSizeChange={() => this.codeEditor.scrollToEnd({ animated: false })} >
-                        <TextInput style={{flex: 1, color: "#f0f0f0", padding: 10, overflow: "scroll", flexWrap: "nowrap"}} multiline autoCorrect={false} autoCapitalize="none" onChangeText={this.formatText}>{this.state.activeFile.contents}</TextInput>
+                        <View style={{paddingTop: 10, marginRight: 10, alignItems: "flex-end"}}>
+                            {lineNumbers}
+                        </View>
+                        <TextInput style={{flex: 1, color: "#f0f0f0", paddingTop: 10, width:"100%", overflow: "scroll", flexWrap: "nowrap"}} multiline autoCorrect={false} autoCapitalize="none" onChangeText={this.formatText}>{this.state.activeFile.contents}</TextInput>
                     </ScrollView>
                 </View>
             </View>

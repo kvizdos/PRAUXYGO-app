@@ -57,7 +57,6 @@ export default class CodeScreen extends React.Component {
     render() {
       return (
       <View style={styles.container}>
-        <View style={{height: 24, backgroundColor: "#303aa1"}}></View>
         <SplitView>
           <Editor openedTabs={this.state.openedTabs} closeFile={this.closeFile}></Editor>
           <WebPreview previewURL="http://192.168.86.48:8080"></WebPreview>

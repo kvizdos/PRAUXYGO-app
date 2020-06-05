@@ -20,20 +20,6 @@ export default class FileBrowser extends React.Component {
         }
     }
 
-    // createFolderStateStructure(directory) {
-    //     let tree = directory.map((i, key) => {
-    //         if(i.type != "file") {
-    //             const folders = [...this.state.folders, {name: `${key}-${i.file}`, showing: false}];
-    //             this.setState({folders: folders}, () => {
-    //                 console.log("adding")
-    //                 this.createFolderStateStructure(i.contents);
-    //             })
-    //         }    
-    //     });
-
-    //     return tree;
-    // }
-
     renderFolder(directory, path = "") {
         let tree = directory.map((i, key) => {
             if(i.type == "file") {
