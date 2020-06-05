@@ -9,22 +9,69 @@ export default class Editor extends React.Component {
             files: this.props.openedTabs,
             tabs: this.props.openedTabs.map(i => i.file),
             activeFile: { file: ".html", contents: "No file selected" },
-            formattedText: "",
-            unformattedText: "",
+            formattedText: undefined,
+            unformattedText: undefined,
             measureMe: "",
-            mainWidth: 0
+            mainWidth: 0,
+            currentCursorIndex: -1
         }
+    }
+
+    findAtIndex = (array, i, current, total) => {
+        var c = array.shift() + " ";
+        total += c.length;    
+        if(i <= total) {
+            return current;
+        }
+    
+        current++;
+
+        return array.length > 0 ? this.findAtIndex(array, i, current, total) : -1
     }
 
     formatText = (enteredText) => {
         this.setState({lineCounters: this.renderLines(`${enteredText.toString()}`)});
-        this.setState({unformattedText: enteredText.toString().split("\n").map((i, key) => {
-            return i;
-        }).join("\n")});
+        if(true || this.state.currentCursorIndex == -1) {
+            this.setState({unformattedText: `${enteredText}`.toString().split("\n").map((i, key) => {
+                return i;
+            }).join("\n")});
 
-        this.setState({formattedText: enteredText.toString().split("\n").map((i, key) => {
-            return <Text style={{lineHeight: 18, width: 10000}} numberOfLines={1} ellipsizeMode="head" key={key}>{i + (key == enteredText.split("\n").length - 1 ? "" : "\n")}</Text>
-        })});
+            this.setState({formattedText: enteredText.toString().split("\n").map((i, key) => {
+                return <Text style={{lineHeight: 18, width: 10000}} numberOfLines={1} ellipsizeMode="head" key={key}>{i + (key == enteredText.split("\n").length - 1 ? "" : "\n")}</Text>
+            })});
+
+        } 
+        // else {
+        //     let unformattedText = this.state.unformattedText.split("\n");
+        //     let formattedText = this.state.formattedText;
+        //     const currentCursorIndex = this.state.currentCursorIndex;
+        //     // if(currentCursorIndex == unformattedText.length) {
+        //     //     console.log("Ooeopepsps")
+        //     //     console.log(enteredText.split("\n").length + " " + unformattedText.length + " " + formattedText.length + " " + currentCursorIndex)
+        //     //     unformattedText.push({});
+        //     //     formattedText.push({})
+        //     //     console.log(enteredText.split("\n").length + " " + unformattedText.length + " " + formattedText.length + " " + currentCursorIndex)
+        //     // }
+        //     const updatedLine = enteredText.split("\n")[currentCursorIndex];
+        //     const updatedLine2 = enteredText.split("\n")[currentCursorIndex + 1];
+
+
+        //     // if(currentCursorIndex == unformattedText.length) {
+        //     //     console.log("Setting")
+        //     //     this.setState({lineCounters: [...this.state.lineCounters, this.renderLines("", currentCursorIndex)]});
+        //     // }
+
+        //     formattedText[currentCursorIndex] = <Text style={{lineHeight: 18, width: 10000, color: "orange"}} numberOfLines={1} ellipsizeMode="head" key={currentCursorIndex}>{updatedLine + (currentCursorIndex == enteredText.split("\n").length - 1 ? "" : "\n")}</Text>
+        //     formattedText[currentCursorIndex + 1] = <Text style={{lineHeight: 18, width: 10000, color: "orange"}} numberOfLines={1} ellipsizeMode="head" key={currentCursorIndex + 1}>{updatedLine2 + (currentCursorIndex + 1 == enteredText.split("\n").length - 1 ? "" : "\n")}</Text>
+            
+        //     this.setState({unformattedText: unformattedText.join("\n")});
+
+        //     this.setState({formattedText: formattedText}, () => {
+        //         const t2 = +new Date();
+
+        //         console.log("time === " + (t2 - t1))
+        //     })
+        // }
     };
 
     openFile = (fileName) => {
@@ -48,18 +95,19 @@ export default class Editor extends React.Component {
 
         this.props.closeFile(file);
     }
-
-    measure = (e) => {
-        const width = e.nativeEvent.layout.width;
-        console.log("w: " + width)
-    }
-
-    renderLines = (text) => {
+    renderLines = (text, num) => {
         let lineNumbers = [];
-        for(let i = 0; i < text.split("\n").length; i++) {
-            lineNumbers.push(<View key={i} style={{alignItems: "flex-end", marginRight: 5}}>
-                    <Text style={{color: "#586673", paddingLeft: 5, margin: 0, paddingBottom: 0, paddingTop: 0, lineHeight: 18, alignItems: "center"}} key={i}>{i + 1}</Text>
-                </View>)
+        if(num == undefined) {
+            for(let i = 0; i < text.split("\n").length; i++) {
+                lineNumbers.push(<View key={i} style={{alignItems: "flex-end", marginRight: 5}}>
+                        <Text style={{color: "#586673", paddingLeft: 5, margin: 0, paddingBottom: 0, paddingTop: 0, lineHeight: 18, alignItems: "center"}} key={i}>{i + 1}</Text>
+                    </View>)
+            }
+        } else {
+            num++;
+            lineNumbers = (<View key={num} style={{alignItems: "flex-end", marginRight: 5}}>
+                        <Text style={{color: "#586673", paddingLeft: 5, margin: 0, paddingBottom: 0, paddingTop: 0, lineHeight: 18, alignItems: "center"}} key={num}>{num + 1}</Text>
+                    </View>)
         }
 
         return lineNumbers;
@@ -67,9 +115,12 @@ export default class Editor extends React.Component {
 
     setSelection = ({selection}) => {
         var line = this.state.unformattedText.substring(this.state.unformattedText.substring(0, selection.start).lastIndexOf("\n") + 1, selection.start) + this.state.unformattedText.substring(selection.start, selection.start + this.state.unformattedText.substring(selection.start).indexOf("\n"))
-        
-
+    
         const lineStart = selection.start - this.state.unformattedText.substring(0, selection.start).lastIndexOf("\n") - 1
+
+        const onLine = this.findAtIndex(JSON.parse(JSON.stringify(this.state.unformattedText)).split("\n"), selection.start, 0, 0);
+
+        this.setState({currentCursorIndex: onLine != -1 ? onLine : this.state.unformattedText.split("\n").length})
 
         this.setState({measureMe: line.substring(0, lineStart)}, () => {        
             setTimeout(() => this.refs.measureMe.measure((fx, fy, width, height, px, py) => {
@@ -101,13 +152,13 @@ export default class Editor extends React.Component {
             files: files,
             tabs: tabs,
             activeFile: file,
-            formattedText: file.contents.toString().split("\n").map((i, key) => {
+            formattedText: state.activeFile.file == ".html" && state.activeFile.contents == "No file selected" ? file.contents.toString().split("\n").map((i, key) => {
                 return <Text style={{lineHeight: 18, width: 10000}} numberOfLines={1} ellipsizeMode="head" key={key}>{i + (key == file.contents.split("\n").length - 1 ? "" : "\n")}</Text>
-            }),
-            unformattedText: file.contents.toString().split("\n").map((i, key) => {
+            }) : state.formattedText,
+            unformattedText: state.activeFile.file == ".html" && state.activeFile.contents == "No file selected" ? file.contents.toString().split("\n").map((i, key) => {
                 return i;
-            }).join("\n"),
-            lineCounters: renderLines(file.contents.toString())
+            }).join("\n") : state.unformattedText,
+            lineCounters: state.activeFile.file == ".html" && state.activeFile.contents == "No file selected" ? renderLines(file.contents.toString()) : state.lineCounters
         }
     }
 
@@ -137,8 +188,8 @@ export default class Editor extends React.Component {
                         </ScrollView>
                         </ScrollView>
                         
-                <View style={{zIndex: 0, flex: 1, flexWrap: "nowrap", left: -100000, position: 'absolute', alignItems: "center"}}>
-                    <Text ref="measureMe" style={{opacity: 0}}>{this.state.measureMe}</Text>
+                <View style={{zIndex: 0, flex: 1, flexWrap: "nowrap", left: -1000000, top: -10000000, position: 'absolute', alignItems: "center"}}>
+                    <Text ref="measureMe" style={{backgroundColor: "red"}}>{this.state.measureMe}</Text>
                 </View>
                 </View>
             </View>
