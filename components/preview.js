@@ -163,7 +163,7 @@ export default class WebPreview extends React.Component {
                                     {!isCaughtError && message.message}
                                     </Text>
                                     {isCaughtError && <Text style={{backgroundColor: "#b31f15", color: "#ffc8c4", padding: 2}}>
-                                        {JSON.parse(message.message).url}:{JSON.parse(message.message).line}
+                                        {JSON.parse(message.message).url}:{JSON.parse(message.message).line - 1}
                                         </Text>}
                                     </View>
                             })}
