@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, NativeSyntheticEvent, Animated } from 'react-native';
+import { StyleSheet, Text, View, NativeSyntheticEvent, Animated, AsyncStorage } from 'react-native';
 import { PanGestureHandler, State, ScrollView } from "react-native-gesture-handler";
 import { Dimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';

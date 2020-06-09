@@ -1,10 +1,11 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, AsyncStorage } from 'react-native';
 import SplitView from '../components/splitview';
 import Editor from '../components/editor';
 import Terminal from '../components/terminal';
 import WebPreview from '../components/preview';
 import FileBrowser from '../components/filebrowser';
+import { makeRequest, DEFAULTNETWORKINGURL, CREATENETWORKURL } from '../helpers/networking';
 
 export default class CodeScreen extends React.Component {
   constructor() {
@@ -31,9 +32,12 @@ export default class CodeScreen extends React.Component {
     }
   }
 
-  componentDidMount() {
-    fetch("http://192.168.86.48:8080/prauxyapi")
-    .then((resp) => resp.json())
+  async componentDidMount() {
+    makeRequest("/prauxyapi", {
+      headers: {
+        Authorization: `Bearer ${await AsyncStorage.getItem("@UserInfo:username")}:${await AsyncStorage.getItem("@UserInfo:token")}`
+      }
+    }, CREATENETWORKURL(this.props.route.params.id))
     .then(files => {
       const folders = this.createFolderStateStructure(JSON.parse(JSON.stringify(files)));
       this.setState({files: JSON.parse(JSON.stringify(files)), folders: folders})
@@ -58,8 +62,8 @@ export default class CodeScreen extends React.Component {
       return (
       <View style={styles.container}>
         <SplitView>
-          <Editor openedTabs={this.state.openedTabs} closeFile={this.closeFile}></Editor>
-          <WebPreview previewURL="http://192.168.86.48:8080"></WebPreview>
+          <Editor id={this.props.route.params.id} webview={this.state.webview} openedTabs={this.state.openedTabs} closeFile={this.closeFile}></Editor>
+          <WebPreview setWebView={(view) => this.setState({webview: view})} previewURL={this.props.route.params.previewURL}></WebPreview>
           <Terminal></Terminal>
           <FileBrowser files={this.state.files} folders={this.state.folders} openFile={this.openFile}></FileBrowser>
         </SplitView>

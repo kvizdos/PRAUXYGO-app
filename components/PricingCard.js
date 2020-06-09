@@ -1,20 +1,29 @@
 import React from 'react';
-import { StyleSheet, Text, View, Animated, ListView } from 'react-native';
+import { StyleSheet, Text, View, Animated, YellowBox } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { Input, Button } from 'react-native-elements';
+import { Button } from 'react-native-elements';
 import { FlatList } from 'react-native-gesture-handler';
 
+YellowBox.ignoreWarnings([
+	'VirtualizedLists should never be nested', // TODO: Remove when fixed
+])
+
 export default class PricingCard extends React.Component {
-    static selected = undefined;
     static amount = 0;
+    static selected = undefined;
+    static didChange = false;
 
     constructor() {
         super();
         PricingCard.amount++;
         this.state = { myID: PricingCard.amount };
+
+        // if(this.props.selected != undefined && this.props.selected == true) {
+        //     PricingCard.selected = this.props.name;
+        // }
     }
 
-    renderListItem({item}, disclaimer = false) {
+    renderListItem = ({item}, disclaimer = false) => {
         return (
             <View style={{flex: 1, flexDirection: "row", alignItems: "center"}}>
                 {!disclaimer && <Icon name="radio-button-checked" style={{marginRight: 5}} />}
@@ -24,16 +33,22 @@ export default class PricingCard extends React.Component {
     }
 
     onSelect = () => {
+        PricingCard.didChange = true;
         PricingCard.selected = this.props.name;
         this.props.onSelect();
     }
 
     render() {
+        if(PricingCard.didChange == false && this.props.selected) {
+            PricingCard.selected = this.props.name;
+        }
+        
         return (
             <View style={[styles.card, this.state.myID == 1 ? {marginRight: 25} : {}]}>
                 <View>
                     <Text style={{fontWeight: "bold", fontSize: 32, color: this.props.color}}>{this.props.name}</Text>
                     <Text style={{fontSize: 24}}>{this.props.price}</Text>
+                    {this.props.sub && <Text style={{fontSize: 21}}>{this.props.sub}</Text>}
                     {/* {[...this.props.items].map((item, key) => {
                         return (<Text key={key}>{item}</Text>)
                     })} */}
@@ -51,8 +66,8 @@ export default class PricingCard extends React.Component {
 
 const styles = StyleSheet.create({
     card: {
-        marginBottom: 25,
-        minHeight: 300,
+        margin: 25,
+        marginBottom: 0,
         borderWidth: 2,
         borderRadius: 2,
         borderColor: "#e8e8e8",

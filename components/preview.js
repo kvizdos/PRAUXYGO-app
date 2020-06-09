@@ -51,7 +51,7 @@ export default class WebPreview extends React.Component {
 
         if(!localActions.includes(CMD)) {
             this.setState({consoleMessages: [...this.state.consoleMessages, {message: CMD, type: "command"}]})
-            this.webview.postMessage(JSON.stringify({action: "cmd", cmd: CMD}))
+            this.refs.webview.postMessage(JSON.stringify({action: "cmd", cmd: CMD}))
         } else {
             switch(CMD) {
                 case "":
@@ -115,7 +115,8 @@ export default class WebPreview extends React.Component {
     }
 
     componentDidMount() {
-        this.webview.postMessage("hello")
+        this.refs.webview.postMessage("hello")
+        this.props.setWebView(this.refs.webview);
     }
 
     static getDerivedStateFromProps(props, state) {
@@ -131,7 +132,8 @@ export default class WebPreview extends React.Component {
         return(
             <View style={{flex: 1}}>
                 <WebView 
-                ref={webview => (this.webview = webview)}
+                ref="webview"
+                // ref={webview => (this.refs.webview = webview)}
                 // injectedJavaScript={INJECTEDJAVASCRIPT}
                 scalesPageToFit={true}
                 onMessage={this.getCode}

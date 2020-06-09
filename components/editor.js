@@ -1,6 +1,8 @@
 import React from 'react';
-import { StyleSheet, Text, View, ScrollView, TextInput } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TextInput, AsyncStorage } from 'react-native';
 import Tabs from './tab'
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import { makeRequest, CREATENETWORKURL } from '../helpers/networking';
 
 export default class Editor extends React.Component {
     constructor(props) {
@@ -13,7 +15,9 @@ export default class Editor extends React.Component {
             unformattedText: undefined,
             measureMe: "",
             mainWidth: 0,
-            currentCursorIndex: -1
+            currentCursorIndex: -1,
+            lineCounters: [],
+            webview: undefined
         }
     }
 
@@ -41,37 +45,6 @@ export default class Editor extends React.Component {
             })});
 
         } 
-        // else {
-        //     let unformattedText = this.state.unformattedText.split("\n");
-        //     let formattedText = this.state.formattedText;
-        //     const currentCursorIndex = this.state.currentCursorIndex;
-        //     // if(currentCursorIndex == unformattedText.length) {
-        //     //     console.log("Ooeopepsps")
-        //     //     console.log(enteredText.split("\n").length + " " + unformattedText.length + " " + formattedText.length + " " + currentCursorIndex)
-        //     //     unformattedText.push({});
-        //     //     formattedText.push({})
-        //     //     console.log(enteredText.split("\n").length + " " + unformattedText.length + " " + formattedText.length + " " + currentCursorIndex)
-        //     // }
-        //     const updatedLine = enteredText.split("\n")[currentCursorIndex];
-        //     const updatedLine2 = enteredText.split("\n")[currentCursorIndex + 1];
-
-
-        //     // if(currentCursorIndex == unformattedText.length) {
-        //     //     console.log("Setting")
-        //     //     this.setState({lineCounters: [...this.state.lineCounters, this.renderLines("", currentCursorIndex)]});
-        //     // }
-
-        //     formattedText[currentCursorIndex] = <Text style={{lineHeight: 18, width: 10000, color: "orange"}} numberOfLines={1} ellipsizeMode="head" key={currentCursorIndex}>{updatedLine + (currentCursorIndex == enteredText.split("\n").length - 1 ? "" : "\n")}</Text>
-        //     formattedText[currentCursorIndex + 1] = <Text style={{lineHeight: 18, width: 10000, color: "orange"}} numberOfLines={1} ellipsizeMode="head" key={currentCursorIndex + 1}>{updatedLine2 + (currentCursorIndex + 1 == enteredText.split("\n").length - 1 ? "" : "\n")}</Text>
-            
-        //     this.setState({unformattedText: unformattedText.join("\n")});
-
-        //     this.setState({formattedText: formattedText}, () => {
-        //         const t2 = +new Date();
-
-        //         console.log("time === " + (t2 - t1))
-        //     })
-        // }
     };
 
     openFile = (fileName) => {
@@ -152,13 +125,14 @@ export default class Editor extends React.Component {
             files: files,
             tabs: tabs,
             activeFile: file,
-            formattedText: state.activeFile.file == ".html" && state.activeFile.contents == "No file selected" ? file.contents.toString().split("\n").map((i, key) => {
+            formattedText: file.contents.toString().split("\n").map((i, key) => {
                 return <Text style={{lineHeight: 18, width: 10000}} numberOfLines={1} ellipsizeMode="head" key={key}>{i + (key == file.contents.split("\n").length - 1 ? "" : "\n")}</Text>
-            }) : state.formattedText,
+            }),
             unformattedText: state.activeFile.file == ".html" && state.activeFile.contents == "No file selected" ? file.contents.toString().split("\n").map((i, key) => {
                 return i;
             }).join("\n") : state.unformattedText,
-            lineCounters: state.activeFile.file == ".html" && state.activeFile.contents == "No file selected" ? renderLines(file.contents.toString()) : state.lineCounters
+            lineCounters: state.activeFile.file == ".html" && state.activeFile.contents == "No file selected" ? renderLines(file.contents.toString()) : state.lineCounters,
+            webview: props.webview
         }
     }
 
@@ -166,10 +140,35 @@ export default class Editor extends React.Component {
         this.setState({mainWidth: e.nativeEvent.layout.width})
     }
 
+    saveFile = async () => {
+        const file = this.state.activeFile.file;
+        const contents = this.state.unformattedText;
+
+        console.log(file);
+
+        // makeRequest("/prauxyapi/update", {
+        //     method: "POST",
+        //     headers: {
+        //         Accept: "application/json",
+        //         'Content-Type': "application/json",
+        //         Authorization: `Bearer ${await AsyncStorage.getItem("@UserInfo:username")}:${await AsyncStorage.getItem("@UserInfo:token")}`
+        //     },
+        //     body: JSON.stringify({
+        //         file: file,
+        //         contents: contents 
+        //     })
+        // }, CREATENETWORKURL(this.props.id)).then(r => {
+        //     this.state.webview.reload();
+        // })
+    }
+
     render() {
         return(
             <View style={{flex: 1, backgroundColor: "#252c33", position: 'relative', zIndex: 10}} onLayout={this._onLayoutEvent}>
-                <View style={{height: 40,backgroundColor: "#6c7782"}}>
+                <View style={{height: 40,backgroundColor: "#6c7782", flexDirection: "row"}}>
+                    <View style={{justifyContent: "center", padding: 8, backgroundColor: "#829eba"}}>
+                        <Icon name="save" size={21} color="#FFF" onPress={this.saveFile}/>
+                    </View>
                     <Tabs tabs={this.state.tabs} openAction={this.openFile} closeAction={this.closeFile}></Tabs>
                 </View>
                 <View style={{flex: 1, flexDirection: "row"}}>

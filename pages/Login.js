@@ -1,14 +1,56 @@
 import React from 'react';
-import { StyleSheet, Text, View, KeyboardAvoidingView  } from 'react-native';
+import { StyleSheet, Text, View, KeyboardAvoidingView, AsyncStorage  } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { Input, PricingCard, Button } from 'react-native-elements';
+import { makeRequest, CREATENETWORKURL } from '../helpers/networking';
 
 export default class Login extends React.Component {
     constructor() {
         super();
         this.state = {
-            backgroundColor: []
+            backgroundColor: [],
+            username: undefined,
+            password: undefined,
+            missingInfo: [],
+            invalidUsername: false,
+            invalidPassword: false
         }
+    }
+
+    login = () => {
+        const username = this.state.username;
+        const password = this.state.password;
+
+        let missingInfo = [];
+
+        if(username == "" || username == undefined) missingInfo.push("username");
+        if(password == "" || password == undefined) missingInfo.push("password");
+
+        this.setState({missingInfo: missingInfo});
+
+        if(missingInfo.length > 0) return;
+
+        makeRequest('/login', {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                'Content-Type': "application/json"
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password
+            })
+        }, CREATENETWORKURL("auth")).then(r => {
+            if(r.authenticated) {
+                AsyncStorage.setItem("@UserInfo:token", r.token)
+                AsyncStorage.setItem("@UserInfo:username", username)
+                AsyncStorage.setItem("@UserInfo:permissions", JSON.stringify(r.permissions))
+                this.props.isLoggedIn();
+            } else {
+                this.setState({invalidUsername: r.reason.indexOf("username") >= 0, invalidPassword: r.reason.indexOf("password") >= 0})
+                // todo: say error
+            }
+        })
     }
 
     render() {
@@ -23,14 +65,19 @@ export default class Login extends React.Component {
                         <Input
                             placeholder='Username'
                             leftIcon={{ name: 'account-box' }}
+                            onChangeText={text => {this.setState({username: text}); this.setState({missingInfo: this.state.missingInfo.filter(i => i != "username"), invalidUsername: false})}}
+                            errorMessage={this.state.missingInfo.indexOf("username") >= 0 ? "Username is required" : this.state.invalidUsername ? "Invalid username" : ""}
                         />
                         
                         <Input
                             placeholder='Password'
                             leftIcon={{ name: 'lock' }}
+                            onChangeText={text => {this.setState({password: text}); this.setState({missingInfo: this.state.missingInfo.filter(i => i != "password"), invalidPassword: false})}}
+                            errorMessage={this.state.missingInfo.indexOf("password") >= 0 ? "Password is required" : this.state.invalidPassword ? "Invalid password" : ""}
+                            secureTextEntry={true}
                         />
 
-                        <Button title="Login" onPress={() => this.props.navigation.navigate("Code")} />
+                        <Button title="Login" onPress={this.login} />
                     </View>
 
                     <View style={{borderWidth: 2, borderColor: "#e8e8e8", borderRadius: 10, margin: 15}} />
