@@ -56,7 +56,7 @@ export default class Tabs extends React.Component {
                         <View style={styles.tabContents}>
                             <Text ellipsizeMode='tail' style={{color: '#FFF'}} numberOfLines={1}>{[...fileName.split("/")].pop()}</Text>
                             <TouchableHighlight onPress={() => this.closeTab(fileName)} style={{justifyContent: "center", padding: 0, margin: 0}}>
-                                {this.props.changedFiles().findIndex(i => i == fileName) == -1 ? <Text>&times;</Text> : <Text style={{fontSize: 21, padding: 0, margin: 0, marginTop: -2.5, color: "#FFF"}}>{`\u2022`}</Text>}
+                                {this.props.changedFiles != undefined && this.props.changedFiles().findIndex(i => i == fileName) == -1 ? <Text>&times;</Text> : <Text style={{fontSize: 21, padding: 0, margin: 0, marginTop: -2.5, color: "#FFF"}}>{`\u2022`}</Text>}
                             </TouchableHighlight>
                         </View> 
                     </TouchableHighlight> )

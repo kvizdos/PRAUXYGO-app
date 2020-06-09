@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, NativeSyntheticEvent, Animated, AsyncStorage } from 'react-native';
+import { StyleSheet, Text, View, NativeSyntheticEvent, Animated, AsyncStorage, KeyboardAvoidingView } from 'react-native';
 import { PanGestureHandler, State, ScrollView } from "react-native-gesture-handler";
 import { Dimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import KeyboardListener from 'react-native-keyboard-listener';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -36,6 +37,10 @@ export default class SplitView extends React.Component {
     render() {
         return(
             <View style={styles.container}>
+                <KeyboardListener
+                    onWillShow={() => { this.setState({ keyboardOpen: true }); }}
+                    onWillHide={() => { this.setState({ keyboardOpen: false }); }}
+                />
                 <View style={{padding: 8, backgroundColor: "#576878", width: 60, alignItems: 'center'}}>
                 {!this.state.isFullPreview && 
                   <Icon style={{marginBottom: 15}} onPress={() => this.setState({fileBrowser: { showing: !this.state.fileBrowser.showing, width: this.state.fileBrowser.width }})} name="folder" size={40} color={this.state.fileBrowser.showing ? "#e8e8e8" : "#d4d4d4"} />}
@@ -69,7 +74,7 @@ export default class SplitView extends React.Component {
                 </View>}
 
                 <View style={{flex:1,flexDirection: "column"}}>
-                    <View style={[styles.codeArea, {height: this.state.bottom.showing ? this.state.bottom.height - 25 : '100%', position: 'relative'}]}>
+                    <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={68} style={[styles.codeArea, {height: this.state.bottom.showing ? this.state.bottom.height - 25 : '100%', position: 'relative'}]}>
                         {this.state.left.showing && <View style={[styles.leftPane, {width: this.state.left.width}]}> 
                         {this.props.children[0]} 
                         </View>}
@@ -85,7 +90,7 @@ export default class SplitView extends React.Component {
                             } 
                             }/>}
                         {this.state.right && React.cloneElement(this.props.children[1], {devToolsOpen: this.state.devToolsOpen})}
-                    </View>
+                    </KeyboardAvoidingView>
                     {this.state.bottom.showing && <View style={[styles.lowerPane, {position: 'relative'}]}>
                         <View style={[styles.lowerBar, {top: -5, opacity: this.state.isMovingLowerBar ? .5 : 0}]} onTouchStart={() => this.setState({isMovingLowerBar: true})} onTouchEnd={() => this.setState({isMovingLowerBar: false})} onTouchMove={(e) => {
                                 this.setState({
