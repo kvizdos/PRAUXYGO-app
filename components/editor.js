@@ -144,22 +144,20 @@ export default class Editor extends React.Component {
         const file = this.state.activeFile.file;
         const contents = this.state.unformattedText;
 
-        console.log(file);
-
-        // makeRequest("/prauxyapi/update", {
-        //     method: "POST",
-        //     headers: {
-        //         Accept: "application/json",
-        //         'Content-Type': "application/json",
-        //         Authorization: `Bearer ${await AsyncStorage.getItem("@UserInfo:username")}:${await AsyncStorage.getItem("@UserInfo:token")}`
-        //     },
-        //     body: JSON.stringify({
-        //         file: file,
-        //         contents: contents 
-        //     })
-        // }, CREATENETWORKURL(this.props.id)).then(r => {
-        //     this.state.webview.reload();
-        // })
+        makeRequest("/prauxyapi/update", {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                'Content-Type': "application/json",
+                Authorization: `Bearer ${await AsyncStorage.getItem("@UserInfo:username")}:${await AsyncStorage.getItem("@UserInfo:token")}`
+            },
+            body: JSON.stringify({
+                file: file,
+                contents: contents 
+            })
+        }, CREATENETWORKURL(this.props.id)).then(r => {
+            this.state.webview.reload();
+        })
     }
 
     render() {

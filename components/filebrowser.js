@@ -2,8 +2,6 @@ import React, {useState} from 'react';
 import { View, Text, ScrollView, TouchableHighlight, Dimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
-const screenHeight = Dimensions.get('window').height;
-
 export default class FileBrowser extends React.Component {
     constructor(props) {
         super(props);
@@ -26,7 +24,7 @@ export default class FileBrowser extends React.Component {
                 return (<TouchableHighlight key={key} style={{padding: 3}} underlayColor="transparent" onPress={() => this.props.openFile(i)}>
                             <View style={{flexDirection: "row", alignItems: "center"}}>
                                 <Icon name="description" size={18} color="#bdbdbd" style={{marginRight: 5}}/>
-                                <Text ellipsizeMode='tail' style={{fontSize: 18, color: '#FFF'}} numberOfLines={1}>{i.file}</Text>
+                                <Text ellipsizeMode='tail' style={{fontSize: 18, color: '#FFF'}} numberOfLines={1}>{i.file.split("/").slice(-1)[0]}</Text>
                             </View>
                         </TouchableHighlight>)
             } else {
@@ -38,12 +36,11 @@ export default class FileBrowser extends React.Component {
 
                                 const newState = this.state.folders[loc].showing = !this.state.folders[loc].showing;
 
-                                this.setState({folders: newState}, () => {
-                                })
+                                this.setState({folders: newState})
                             }}>
                         <View style={{flexDirection: "row", alignItems: "center"}} >
                             <Icon name={[...this.state.folders].findIndex(z => z.name == `${path}/${i.file}` && z.showing == true) != -1 ? "folder-open" : "folder"} size={18} color="#bdbdbd" style={{marginRight: 5}}/>
-                            <Text ellipsizeMode='tail' style={{fontSize: 18, color: '#FFF'}} numberOfLines={1}>{i.file}</Text>
+                            <Text ellipsizeMode='tail' style={{fontSize: 18, color: '#FFF'}} numberOfLines={1}>{i.file.split("/").slice(-1)[0]}</Text>
                         </View>
                     </TouchableHighlight>
                     {[...this.state.folders].findIndex(z => z.name == `${path}/${i.file}` && z.showing == true) != -1 && [...directory].find(z => {

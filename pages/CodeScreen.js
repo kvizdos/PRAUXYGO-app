@@ -40,6 +40,7 @@ export default class CodeScreen extends React.Component {
     }, CREATENETWORKURL(this.props.route.params.id))
     .then(files => {
       const folders = this.createFolderStateStructure(JSON.parse(JSON.stringify(files)));
+      
       this.setState({files: JSON.parse(JSON.stringify(files)), folders: folders})
     })
   }
