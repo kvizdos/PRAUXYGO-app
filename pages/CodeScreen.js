@@ -13,7 +13,8 @@ export default class CodeScreen extends React.Component {
     this.state = {
       files: [],
       openedTabs: [{file: "none", contents: "No file opened"}],
-      folders: []
+      folders: [],
+      updatedFiles: []
     }
   }
 
@@ -53,17 +54,70 @@ export default class CodeScreen extends React.Component {
       }
     }
 
-    closeFile = (file) => {      
+    closeFile = (file, reset = false) => {   
       this.setState({
         openedTabs: this.state.openedTabs.filter(i => i.file != file)
       })
+    }
+
+    changeFile = (file, text) => {
+      if(this.state.updatedFiles.findIndex(i => i == file) == -1) {
+        this.setState({updatedFiles: [file, ...this.state.updatedFiles]});
+      }
+
+      if(text != undefined) this.updateFile(file, text)
+    }
+
+    removeFromChangelist = (file) => {
+      this.setState({updatedFiles: this.state.updatedFiles.filter(i => i != file)});
+    }
+
+    getChangedFiles = () => {
+      return this.state.updatedFiles;
+    }
+
+    updateFileAtPath = (arr, file, path = "", setTo) => {
+      // console.log("Starting " + file)
+      if(path == "") path = file.split("/")[0];
+
+      return arr.map(value => {
+          if(value.type == "folder") {
+            if(value.file.split("/").slice(-1) == path.split("/")[0]) {
+              value.contents = this.updateFileAtPath(value.contents, file, file.split("/").slice(1).join("/"), setTo);
+            }
+            return value;
+          }
+
+          if(value.file == file) {
+            return setTo;
+          }
+          return value;
+      });
+    }
+
+    updateFile = (file, contents) => {
+      let allFiles = this.state.files;
+      const newFiles = this.updateFileAtPath(JSON.parse(JSON.stringify(allFiles)), file, "", {
+        file: file,
+        contents: contents,
+        type: "file"
+      });
+
+      let newTabs = this.state.openedTabs.map(value => {
+        if(value.file == file) {
+          value.contents = contents;
+        }
+        return value;
+      })
+
+      this.setState({files: newFiles, openedTabs: newTabs})
     }
 
     render() {
       return (
       <View style={styles.container}>
         <SplitView>
-          <Editor id={this.props.route.params.id} webview={this.state.webview} openedTabs={this.state.openedTabs} closeFile={this.closeFile}></Editor>
+          <Editor updateFile={this.updateFile} removeFromChangelist={this.removeFromChangelist} getChangedFiles={this.getChangedFiles} changeFile={this.changeFile} id={this.props.route.params.id} webview={this.state.webview} openedTabs={this.state.openedTabs} closeFile={this.closeFile}></Editor>
           <WebPreview setWebView={(view) => this.setState({webview: view})} previewURL={this.props.route.params.previewURL}></WebPreview>
           <Terminal></Terminal>
           <FileBrowser files={this.state.files} folders={this.state.folders} openFile={this.openFile}></FileBrowser>

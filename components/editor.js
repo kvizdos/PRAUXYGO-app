@@ -1,8 +1,9 @@
 import React from 'react';
-import { StyleSheet, Text, View, ScrollView, TextInput, AsyncStorage } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TextInput, AsyncStorage, Modal, TouchableOpacity } from 'react-native';
 import Tabs from './tab'
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { makeRequest, CREATENETWORKURL } from '../helpers/networking';
+import { Button } from 'react-native-elements';
 
 export default class Editor extends React.Component {
     constructor(props) {
@@ -17,7 +18,16 @@ export default class Editor extends React.Component {
             mainWidth: 0,
             currentCursorIndex: -1,
             lineCounters: [],
-            webview: undefined
+            webview: undefined,
+            modalVisibile: false,
+            modal: {
+                header: "Undefined",
+                message: "blah",
+                buttonLeft: "",
+                buttonRight: "",
+                onPressLeft: () => {},
+                onPressRight: () => {}
+            }
         }
     }
 
@@ -33,7 +43,7 @@ export default class Editor extends React.Component {
         return array.length > 0 ? this.findAtIndex(array, i, current, total) : -1
     }
 
-    formatText = (enteredText) => {
+    formatText = (enteredText) => {        
         this.setState({lineCounters: this.renderLines(`${enteredText.toString()}`)});
         if(true || this.state.currentCursorIndex == -1) {
             this.setState({unformattedText: `${enteredText}`.toString().split("\n").map((i, key) => {
@@ -47,7 +57,12 @@ export default class Editor extends React.Component {
         } 
     };
 
-    openFile = (fileName) => {
+    openFile = (fileName, updateState = false) => {
+        // console.log("FILENAME: " + this.state.activeFile.file + " NOT " + fileName)
+        // console.log("Active contents: " + this.state.activeFile.contents.substring(0, 10));
+        // console.log("New " + this.state.unformattedText.substring(0, 10))
+        
+        // if(updateState && fileName != this.state.activeFile.file) this.props.updateFile(this.state.activeFile.file, this.state.unformattedText)
         this.setState({
             activeFile: this.state.files.filter(i => i.file == fileName)[0]
         })
@@ -55,7 +70,7 @@ export default class Editor extends React.Component {
         this.formatText(this.state.files.filter(i => i.file == fileName)[0].contents);
     }
     
-    closeFile = (file) => {
+    closeFile = (file, revert = false) => {
         if(this.state.activeFile.file == file) {
             const loc = this.state.tabs.findIndex(i => i == file);
 
@@ -66,7 +81,9 @@ export default class Editor extends React.Component {
             }
         };
 
-        this.props.closeFile(file);
+        this.props.removeFromChangelist(file);
+
+        this.props.closeFile(file, revert);
     }
     renderLines = (text, num) => {
         let lineNumbers = [];
@@ -144,6 +161,8 @@ export default class Editor extends React.Component {
         const file = this.state.activeFile.file;
         const contents = this.state.unformattedText;
 
+        if(this.props.getChangedFiles().findIndex(i => i == this.state.activeFile.file) == -1) return;
+
         makeRequest("/prauxyapi/update", {
             method: "POST",
             headers: {
@@ -156,18 +175,50 @@ export default class Editor extends React.Component {
                 contents: contents 
             })
         }, CREATENETWORKURL(this.props.id)).then(r => {
+            this.props.updateFile(file, contents);
+            this.props.removeFromChangelist(file);
+
             this.state.webview.reload();
         })
+    }
+
+    openModal = (header, message, {buttonLeft, onPressLeft, leftBackgroundColor, leftColor}, {buttonRight = "no", onPressRight = () => {}, rightBackgroundColor = "#FFF", rightColor = "#FFF", dontShow = false}) => {
+        this.setState({modal: {
+            header: header,
+            message: message,
+            buttonLeft: buttonLeft,
+            buttonRight: buttonRight,
+            onPressLeft: onPressLeft,
+            onPressRight: onPressRight,
+            leftBackgroundColor: leftBackgroundColor,
+            leftColor: leftColor,
+            rightBackgroundColor: rightBackgroundColor,
+            rightColor: rightColor,
+            dontShowRight: dontShow
+        }, modalVisibile: true})
     }
 
     render() {
         return(
             <View style={{flex: 1, backgroundColor: "#252c33", position: 'relative', zIndex: 10}} onLayout={this._onLayoutEvent}>
+                <Modal animationType="fade" transparent={true} visible={this.state.modalVisibile}>
+                    <TouchableOpacity activeOpacity={1} onPress={() => this.setState({modalVisibile: false})} style={{position: 'absolute', top: 0, left: 0, width: "100%", height: "100%", flex: 1, backgroundColor: "rgba(0,0,0,.5)"}} />
+                    <View style={{flex: 1, alignItems: "center", justifyContent: "center"}}>
+                        <View style={{width: "50%", backgroundColor: "#FFF", padding: 10, borderRadius: 5}}>
+                            <Text style={{fontWeight: "500", fontSize: 24}}>{this.state.modal.header}</Text>
+                            <Text style={{fontSize: 18}}>{this.state.modal.message}</Text>
+                            <View>
+                                {this.state.modal.buttonLeft != "" && <Button title={this.state.modal.buttonLeft} onPress={() => {this.state.modal.onPressLeft(); this.setState({modalVisibile: false})}} buttonSyle={{backgroundColor: this.state.modal.leftBackgroundColor, color: this.state.modal.leftColor}} />}
+                                {this.state.modal.dontShowRight != false && this.state.modal.buttonRight != "" && <Button title={this.state.modal.buttonRight} onPress={() => {this.state.modal.onPressRight(); this.setState({modalVisibile: false})}} buttonSyle={{backgroundColor: this.state.modal.rightBackgroundColor, color: this.state.modal.rightColor}} />}
+                            </View>
+                        </View>
+                    </View>
+                </Modal>
                 <View style={{height: 40,backgroundColor: "#6c7782", flexDirection: "row"}}>
                     <View style={{justifyContent: "center", padding: 8, backgroundColor: "#829eba"}}>
-                        <Icon name="save" size={21} color="#FFF" onPress={this.saveFile}/>
+                        <Icon name="save" size={21} color={this.props.getChangedFiles().findIndex(i => i == this.state.activeFile.file) != -1 ? "#FFF" : "#bababa"} onPress={this.saveFile}/>
                     </View>
-                    <Tabs tabs={this.state.tabs} openAction={this.openFile} closeAction={this.closeFile}></Tabs>
+                    <Tabs saveFile={this.saveFile} openModal={this.openModal} changedFiles={this.props.getChangedFiles} tabs={this.state.tabs} openAction={(file) => {this.openFile(file, true);}} closeAction={this.closeFile}></Tabs>
                 </View>
                 <View style={{flex: 1, flexDirection: "row"}}>
                     <ScrollView horizontal={true} ref={ref => this.codeEditor = ref }> 
@@ -177,7 +228,7 @@ export default class Editor extends React.Component {
                                 <View style={{paddingTop: 10}}>
                                     {this.state.lineCounters}
                                 </View>
-                                    <TextInput onSelectionChange={({ nativeEvent: { selection } }) => { this.setSelection({ selection }) }} style={{paddingRight: 100, color: "#f0f0f0", paddingTop: 10, overflow: "hidden", flexWrap: "wrap"}} multiline autoCorrect={false} autoCapitalize="none" onChangeText={this.formatText}>
+                                    <TextInput onSelectionChange={({ nativeEvent: { selection } }) => { this.setSelection({ selection }) }} style={{paddingRight: 100, color: "#f0f0f0", paddingTop: 10, overflow: "hidden", flexWrap: "wrap"}} multiline autoCorrect={false} autoCapitalize="none" onChangeText={(text) => {this.formatText(text); this.props.changeFile(this.state.activeFile.file, text);} }>
                                         {this.state.formattedText}
                                     </TextInput>
                             </View>
