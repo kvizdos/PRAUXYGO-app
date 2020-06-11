@@ -1,20 +1,32 @@
 import React, {useState} from 'react';
-import { View, Text, ScrollView, TouchableHighlight, Dimensions } from 'react-native';
+import { AsyncStorage, StyleSheet, View, Text, ScrollView, TouchableHighlight, Dimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { TouchableOpacity } from 'react-native-gesture-handler';
+import { Input, Button } from 'react-native-elements';
+import { makeRequest, CREATENETWORKURL } from '../helpers/networking';
 
 export default class FileBrowser extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             files: this.props.files,
-            folders: this.props.folders
+            folders: this.props.folders,
+            newFileName: "",
+            isCreatingNew: false,
+            inputError: undefined,
+            showCreateNew: false
         }
     }
 
     static getDerivedStateFromProps(props, state) {
         return {
             files: props.files,
-            folders: props.folders
+            folders: props.folders,
+            openModa: props.openModal,
+            newFileName: state.newFileName,
+            isCreatingNew: state.isCreatingNew,
+            inputError: state.inputError,
+            showCreateNew: state.showCreateNew
         }
     }
 
@@ -57,13 +69,61 @@ export default class FileBrowser extends React.Component {
         return tree;
     }
 
+    createNewFileFolder = async (text) => {
+        const type = text.split("/").slice(-1)[0].indexOf(".") != -1 ? "file" : "folder";
+
+        let req = {};
+
+        req[type] = text;
+
+        this.setState({isCreatingNew: true})
+
+        makeRequest('/prauxyapi/new/file', {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                'Content-Type': "application/json",
+                Authorization: `Bearer ${await AsyncStorage.getItem("@UserInfo:username")}:${await AsyncStorage.getItem("@UserInfo:token")}`
+            },
+            body: JSON.stringify(req)
+        }, CREATENETWORKURL(this.props.id)).then(r => {
+            if(r.status == "fail") {
+                this.setState({inputError: r.reason});
+            this.setState({isCreatingNew: false})
+                return;
+            }
+
+            this.props.reloadFiles();
+            this.setState({showCreateNew: false})
+            this.setState({isCreatingNew: false})
+        })
+    }
+
     render() {
        return  (
-            <ScrollView horizontal={true}>
-                <ScrollView>
-                    {this.renderFolder([...this.state.files])}
+            <View style={{flex: 1}}>
+                <View style={styles.header}>
+                    <TouchableOpacity onPress={() => this.setState({showCreateNew: true})}>
+                        <Icon name="add" size={21} style={{color: "#FFF"}} />
+                    </TouchableOpacity>   
+                </View>
+                {this.state.showCreateNew && <View style={[styles.header, {padding: 0, backgroundColor: "#36404a"}]}>
+                    <Input disabled={this.state.isCreatingNew} errorMessage={this.state.inputError != undefined ? this.state.inputError : undefined} errorStyle={{color: "#fc6560"}} autoCorrect={false} onSubmitEditing={(text) => this.createNewFileFolder(text.nativeEvent.text)} placeholder="Folder or file name" placeholderTextColor="#dedede" inputStyle={{color: "#FFF", fontSize: 14, padding: 0, margin: 0}} /> 
+                </View>}
+                <ScrollView horizontal={true}>
+                    <ScrollView>
+                        {this.renderFolder([...this.state.files])}
+                    </ScrollView>
                 </ScrollView>
-            </ScrollView>
+            </View>
        )
     }
 }
+
+const styles = StyleSheet.create({
+    header: {
+        padding: 5,
+        backgroundColor: "#5c6b7a",
+        width: "100%"
+    }
+})

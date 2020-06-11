@@ -121,7 +121,7 @@ export default class Projects extends React.Component {
                         </TouchableOpacity>
                     </View>
 
-                    {this.state.projects.length > 0 ? 
+                    {this.state.projects.length != null && this.state.projects.length > 0 ? 
                     <FlatList style={{flex: 1, width: "100%"}} data={this.state.projects} keyExtractor={(item, index) => item.name} renderItem={this.renderProject}/>
                     : <Text style={{fontSize: 18}}>No projects.</Text>}
                 </View>

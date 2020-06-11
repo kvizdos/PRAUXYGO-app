@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, ScrollView, TextInput, AsyncStorage, Modal, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TextInput, AsyncStorage, TouchableOpacity } from 'react-native';
 import Tabs from './tab'
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { makeRequest, CREATENETWORKURL } from '../helpers/networking';
@@ -18,16 +18,7 @@ export default class Editor extends React.Component {
             mainWidth: 0,
             currentCursorIndex: -1,
             lineCounters: [],
-            webview: undefined,
-            modalVisibile: false,
-            modal: {
-                header: "Undefined",
-                message: "blah",
-                buttonLeft: "",
-                buttonRight: "",
-                onPressLeft: () => {},
-                onPressRight: () => {}
-            }
+            webview: undefined
         }
     }
 
@@ -182,43 +173,14 @@ export default class Editor extends React.Component {
         })
     }
 
-    openModal = (header, message, {buttonLeft, onPressLeft, leftBackgroundColor, leftColor}, {buttonRight = "no", onPressRight = () => {}, rightBackgroundColor = "#FFF", rightColor = "#FFF", dontShow = false}) => {
-        this.setState({modal: {
-            header: header,
-            message: message,
-            buttonLeft: buttonLeft,
-            buttonRight: buttonRight,
-            onPressLeft: onPressLeft,
-            onPressRight: onPressRight,
-            leftBackgroundColor: leftBackgroundColor,
-            leftColor: leftColor,
-            rightBackgroundColor: rightBackgroundColor,
-            rightColor: rightColor,
-            dontShowRight: dontShow
-        }, modalVisibile: true})
-    }
-
     render() {
         return(
             <View style={{flex: 1, backgroundColor: "#252c33", position: 'relative', zIndex: 10}} onLayout={this._onLayoutEvent}>
-                <Modal animationType="fade" transparent={true} visible={this.state.modalVisibile}>
-                    <TouchableOpacity activeOpacity={1} onPress={() => this.setState({modalVisibile: false})} style={{position: 'absolute', top: 0, left: 0, width: "100%", height: "100%", flex: 1, backgroundColor: "rgba(0,0,0,.5)"}} />
-                    <View style={{flex: 1, alignItems: "center", justifyContent: "center"}}>
-                        <View style={{width: "50%", backgroundColor: "#FFF", padding: 10, borderRadius: 5}}>
-                            <Text style={{fontWeight: "500", fontSize: 24}}>{this.state.modal.header}</Text>
-                            <Text style={{fontSize: 18}}>{this.state.modal.message}</Text>
-                            <View>
-                                {this.state.modal.buttonLeft != "" && <Button title={this.state.modal.buttonLeft} onPress={() => {this.state.modal.onPressLeft(); this.setState({modalVisibile: false})}} buttonSyle={{backgroundColor: this.state.modal.leftBackgroundColor, color: this.state.modal.leftColor}} />}
-                                {this.state.modal.dontShowRight != false && this.state.modal.buttonRight != "" && <Button title={this.state.modal.buttonRight} onPress={() => {this.state.modal.onPressRight(); this.setState({modalVisibile: false})}} buttonSyle={{backgroundColor: this.state.modal.rightBackgroundColor, color: this.state.modal.rightColor}} />}
-                            </View>
-                        </View>
-                    </View>
-                </Modal>
                 <View style={{height: 40,backgroundColor: "#6c7782", flexDirection: "row"}}>
                     <View style={{justifyContent: "center", padding: 8, backgroundColor: "#829eba"}}>
                         <Icon name="save" size={21} color={this.props.getChangedFiles().findIndex(i => i == this.state.activeFile.file) != -1 ? "#FFF" : "#bababa"} onPress={this.saveFile}/>
                     </View>
-                    <Tabs saveFile={this.saveFile} openModal={this.openModal} changedFiles={this.props.getChangedFiles} tabs={this.state.tabs} openAction={(file) => {this.openFile(file, true);}} closeAction={this.closeFile}></Tabs>
+                    <Tabs saveFile={this.saveFile} openModal={this.props.openModal} changedFiles={this.props.getChangedFiles} tabs={this.state.tabs} openAction={(file) => {this.openFile(file, true);}} closeAction={this.closeFile}></Tabs>
                 </View>
                 <View style={{flex: 1, flexDirection: "row"}}>
                     <ScrollView horizontal={true} ref={ref => this.codeEditor = ref }> 

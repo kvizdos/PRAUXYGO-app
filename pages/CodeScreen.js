@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, AsyncStorage } from 'react-native';
+import { Modal, TouchableOpacity, Button, StyleSheet, Text, View, AsyncStorage } from 'react-native';
 import SplitView from '../components/splitview';
 import Editor from '../components/editor';
 import Terminal from '../components/terminal';
@@ -14,7 +14,27 @@ export default class CodeScreen extends React.Component {
       files: [],
       openedTabs: [{file: "none", contents: "No file opened"}],
       folders: [],
-      updatedFiles: []
+      updatedFiles: [],
+      modalVisibile: false,
+      modal: {
+          header: "Undefined",
+          message: "blah",
+          buttonLeft: "",
+          buttonRight: "",
+          onPressLeft: () => {},
+          onPressRight: () => {}
+      }
+    }
+  } 
+
+  static getDerivedStateFromProps(props, state) {
+    return {
+        files: state.files,
+        openedTabs: state.openedTabs,
+        folders: state.folders,
+        updatedFiles: state.updatedFiles,
+        modalVisibile: state.modalVisibile,
+        modal: state.modal
     }
   }
 
@@ -33,7 +53,7 @@ export default class CodeScreen extends React.Component {
     }
   }
 
-  async componentDidMount() {
+  getAllFiles = async () => {
     makeRequest("/prauxyapi", {
       headers: {
         Authorization: `Bearer ${await AsyncStorage.getItem("@UserInfo:username")}:${await AsyncStorage.getItem("@UserInfo:token")}`
@@ -46,6 +66,10 @@ export default class CodeScreen extends React.Component {
     })
   }
 
+  async componentDidMount() {
+    await this.getAllFiles();
+  }
+
     openFile = (file) => {
       if(this.state.openedTabs.findIndex(i => i.file == file.file) == -1) {
         this.setState({
@@ -55,6 +79,7 @@ export default class CodeScreen extends React.Component {
     }
 
     closeFile = (file, reset = false) => {   
+      this.setState({modalVisibile: false})
       this.setState({
         openedTabs: this.state.openedTabs.filter(i => i.file != file)
       })
@@ -113,14 +138,36 @@ export default class CodeScreen extends React.Component {
       this.setState({files: newFiles, openedTabs: newTabs})
     }
 
+    openModal = (header, message, child) => {
+      this.setState({modal: {
+          header: header,
+          message: message,
+          child: child,
+      }, modalVisibile: true})
+    }
+
+    closeModal = () => {
+      this.setState({modalVisibile: false})
+    }
+
     render() {
       return (
       <View style={styles.container}>
+        <Modal animationType="fade" transparent={true} visible={this.state.modalVisibile}>
+          <TouchableOpacity activeOpacity={1} onPress={() => this.setState({modalVisibile: false})} style={{position: 'absolute', top: 0, left: 0, width: "100%", height: "100%", flex: 1, backgroundColor: "rgba(0,0,0,.5)"}} />
+            <View style={{flex: 1, alignItems: "center", justifyContent: "center"}}>
+                <View style={{width: "50%", backgroundColor: "#FFF", padding: 25, borderRadius: 5}}>
+                    <Text style={{fontWeight: "500", fontSize: 24}}>{this.state.modal.header}</Text>
+                    <Text style={{fontSize: 18}}>{this.state.modal.message}</Text>
+                    {this.state.modal.child}
+                </View>
+            </View>
+        </Modal>
         <SplitView>
-          <Editor updateFile={this.updateFile} removeFromChangelist={this.removeFromChangelist} getChangedFiles={this.getChangedFiles} changeFile={this.changeFile} id={this.props.route.params.id} webview={this.state.webview} openedTabs={this.state.openedTabs} closeFile={this.closeFile}></Editor>
+          <Editor openModal={this.openModal} updateFile={this.updateFile} removeFromChangelist={this.removeFromChangelist} getChangedFiles={this.getChangedFiles} changeFile={this.changeFile} id={this.props.route.params.id} webview={this.state.webview} openedTabs={this.state.openedTabs} closeFile={this.closeFile}></Editor>
           <WebPreview setWebView={(view) => this.setState({webview: view})} previewURL={this.props.route.params.previewURL}></WebPreview>
           <Terminal></Terminal>
-          <FileBrowser files={this.state.files} folders={this.state.folders} openFile={this.openFile}></FileBrowser>
+          <FileBrowser reloadFiles={this.getAllFiles} id={this.props.route.params.id} openModal={this.openModal} closeModal={this.closeModal} files={this.state.files} folders={this.state.folders} openFile={this.openFile}></FileBrowser>
         </SplitView>
       </View>
       );

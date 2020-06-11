@@ -25,15 +25,19 @@ export default class Tabs extends React.Component {
 
     closeTab = (file, ignoreSaveWarning = false) => {
         if(!ignoreSaveWarning && this.props.changedFiles().findIndex(i => i == file) != -1) {
-            this.props.openModal("This file is not saved.", "Please save this file before closing to make sure you don't lose any data.", {
-                buttonLeft: "Save",
-                onPressLeft: () => {this.props.saveFile(); this.closeTab(file, true)},
-            }, {
-                buttonRight: "",
-                onPressRight: () => {},
-                dontShow: true
-            })
-            return;
+            // this.props.openModal("This file is not saved.", "Please save this file before closing to make sure you don't lose any data.", {
+            //     buttonLeft: "Save",
+            //     onPressLeft: () => {this.props.saveFile(); this.closeTab(file, true)},
+            // }, {
+            //     buttonRight: "",
+            //     onPressRight: () => {},
+            //     dontShow: true
+            // })
+            // return;
+            this.props.openModal("This file is not saved.", "Please save this file before closing to make sure you don't lose any data.", <View>
+                <Button title="Save" onPress={() => {this.props.saveFile(); this.closeTab(file, true)}} />
+            </View>)
+            return
         }
 
         if(this.state.activeTab == file) {

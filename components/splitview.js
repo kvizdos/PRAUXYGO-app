@@ -3,7 +3,6 @@ import { StyleSheet, Text, View, NativeSyntheticEvent, Animated, AsyncStorage, K
 import { PanGestureHandler, State, ScrollView } from "react-native-gesture-handler";
 import { Dimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import KeyboardListener from 'react-native-keyboard-listener';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -37,10 +36,6 @@ export default class SplitView extends React.Component {
     render() {
         return(
             <View style={styles.container}>
-                <KeyboardListener
-                    onWillShow={() => { this.setState({ keyboardOpen: true }); }}
-                    onWillHide={() => { this.setState({ keyboardOpen: false }); }}
-                />
                 <View style={{padding: 8, backgroundColor: "#576878", width: 60, alignItems: 'center'}}>
                 {!this.state.isFullPreview && 
                   <Icon style={{marginBottom: 15}} onPress={() => this.setState({fileBrowser: { showing: !this.state.fileBrowser.showing, width: this.state.fileBrowser.width }})} name="folder" size={40} color={this.state.fileBrowser.showing ? "#e8e8e8" : "#d4d4d4"} />}
