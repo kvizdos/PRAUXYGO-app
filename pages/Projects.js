@@ -56,7 +56,7 @@ export default class Projects extends React.Component {
                 name: this.state.projectName,
                 type: this.state.projectType
             }),
-        }, "https://api.go.prauxy.app").then(r => {
+        }, CREATENETWORKURL("api")).then(r => {
             this.setState({projects: [{
                 name: this.state.projectName,
                 type: this.state.projectType,
@@ -112,6 +112,14 @@ export default class Projects extends React.Component {
                 </KeyboardAvoidingView>
             </Modal>
             <View style={styles.innerContainer}>
+                <Button onPress={async () => {
+                    console.log("Logign out")
+                    console.log(AsyncStorage.getAllKeys())
+                    await AsyncStorage.removeItem("@UserInfo:token")
+                    await AsyncStorage.removeItem("@UserInfo:username")
+                    await AsyncStorage.removeItem("@UserInfo:permissions")
+                    await AsyncStorage.removeItem("@UserInfo:projects")
+                }} title="Logout"></Button>
                 <FlatList style={{flex: 1}} data={this.state.releaseNotes} keyExtractor={(item, index) => item.title} renderItem={this.renderReleaseNote}/>
                 <View style={{alignItems: "flex-start", flex: 1}}>
                     <View style={{width: "100%", alignItems: "center", justifyContent: "space-between", flexDirection: "row"}}>

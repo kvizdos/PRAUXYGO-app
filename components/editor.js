@@ -76,22 +76,12 @@ export default class Editor extends React.Component {
 
         this.props.closeFile(file, revert);
     }
-    renderLines = (text, num) => {
-        let lineNumbers = [];
-        if(num == undefined) {
-            for(let i = 0; i < text.split("\n").length; i++) {
-                lineNumbers.push(<View key={i} style={{alignItems: "flex-end", marginRight: 5}}>
-                        <Text style={{color: "#586673", paddingLeft: 5, margin: 0, paddingBottom: 0, paddingTop: 0, lineHeight: 18, alignItems: "center"}} key={i}>{i + 1}</Text>
-                    </View>)
-            }
-        } else {
-            num++;
-            lineNumbers = (<View key={num} style={{alignItems: "flex-end", marginRight: 5}}>
-                        <Text style={{color: "#586673", paddingLeft: 5, margin: 0, paddingBottom: 0, paddingTop: 0, lineHeight: 18, alignItems: "center"}} key={num}>{num + 1}</Text>
-                    </View>)
-        }
-
-        return lineNumbers;
+    renderLines = (text) => {
+        return Array.from({length: text.match(/\n/gm).length + 1}, (_, i) => {
+            return (<View key={i} style={{alignItems: "flex-end", marginRight: 5}}>
+                             <Text style={{color: "#586673", paddingLeft: 5, margin: 0, paddingBottom: 0, paddingTop: 0, lineHeight: 18, alignItems: "center"}} key={i}>{i + 1}</Text>
+                         </View>)
+        })
     }
 
     setSelection = ({selection}) => {
@@ -150,7 +140,7 @@ export default class Editor extends React.Component {
 
     saveFile = async () => {
         const file = this.state.activeFile.file;
-        const contents = this.state.unformattedText;
+        const contents = this.state.unformattedText.replace(/“|”/gm, '"').replace(/‘|’/gm, "'");
 
         if(this.props.getChangedFiles().findIndex(i => i == this.state.activeFile.file) == -1) return;
 

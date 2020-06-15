@@ -38,7 +38,7 @@ export default class App extends React.Component {
                     username: username,
                     token: token
                 })
-            }, "https://auth.go.prauxy.app").then(r => {
+            }, CREATENETWORKURL("auth")).then(r => {
                 if(r.verified) {
                     AsyncStorage.setItem("@UserInfo:permissions", JSON.stringify(r.permissions))
                     AsyncStorage.setItem("@UserInfo:projects", JSON.stringify(r.projects))

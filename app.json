@@ -5,7 +5,7 @@
     "platforms": [
       "ios"
     ],
-    "version": "0.0.1",
+    "version": "0.0.5",
     "orientation": "landscape",
     "icon": "./assets/icon.png",
     "splash": {
@@ -21,7 +21,8 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.vizdosenterprises.prauxygo"
+      "bundleIdentifier": "com.vizdosenterprises.prauxygo",
+      "buildNumber": "0.0.5"
     }
   }
 }

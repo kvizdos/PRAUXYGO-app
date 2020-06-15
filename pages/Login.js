@@ -13,8 +13,13 @@ export default class Login extends React.Component {
             password: undefined,
             missingInfo: [],
             invalidUsername: false,
-            invalidPassword: false
+            invalidPassword: false,
+            stored: {
+                values: "nul"
+            }
         }
+
+        this.setInfo();
     }
 
     login = () => {
@@ -41,10 +46,13 @@ export default class Login extends React.Component {
                 password: password
             })
         }, CREATENETWORKURL("auth")).then(r => {
+            console.log("Authenticated with " + CREATENETWORKURL("auth"))
             if(r.authenticated) {
+                console.log(r);
                 AsyncStorage.setItem("@UserInfo:token", r.token)
                 AsyncStorage.setItem("@UserInfo:username", username)
                 AsyncStorage.setItem("@UserInfo:permissions", JSON.stringify(r.permissions))
+                AsyncStorage.setItem("@UserInfo:projects", JSON.stringify(r.projects))
                 this.props.isLoggedIn();
             } else {
                 this.setState({invalidUsername: r.reason.indexOf("username") >= 0, invalidPassword: r.reason.indexOf("password") >= 0})
@@ -53,7 +61,19 @@ export default class Login extends React.Component {
         })
     }
 
+    setInfo = async () => {
+        this.setState({
+            stored: {
+                preToken: await AsyncStorage.getItem("@UserInfo:token"),
+                username: await AsyncStorage.getItem("@UserInfo:username"),
+                permissions: await AsyncStorage.getItem("@UserInfo:permissions"),
+                projects: await AsyncStorage.getItem("@UserInfo:projects")
+            }
+        })
+    }
+
     render() {
+        // this.setInfo();
         return (
             <KeyboardAvoidingView behavior="padding" style={styles.center}>
                 <View style={styles.container}>
@@ -78,6 +98,8 @@ export default class Login extends React.Component {
                         />
 
                         <Button title="Login" onPress={this.login} />
+
+                        <Text>{ JSON.stringify(this.state.stored) }</Text>
                     </View>
 
                     <View style={{borderWidth: 2, borderColor: "#e8e8e8", borderRadius: 10, margin: 15}} />
