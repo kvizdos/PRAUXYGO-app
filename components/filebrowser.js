@@ -14,7 +14,8 @@ export default class FileBrowser extends React.Component {
             newFileName: "",
             isCreatingNew: false,
             inputError: undefined,
-            showCreateNew: false
+            showCreateNew: false,
+            newFileNameWriting: undefined
         }
     }
 
@@ -74,11 +75,11 @@ export default class FileBrowser extends React.Component {
 
         let req = {};
 
-        req[type] = text;
+        req['file'] = text;
 
-        this.setState({isCreatingNew: true})
+        this.setState({isCreatingNew: true, newFileNameWriting: undefined})
 
-        makeRequest('/prauxyapi/new/file', {
+        makeRequest('/prauxyapi/new/' + type, {
             method: "POST",
             headers: {
                 Accept: "application/json",
@@ -108,7 +109,16 @@ export default class FileBrowser extends React.Component {
                     </TouchableOpacity>   
                 </View>
                 {this.state.showCreateNew && <View style={[styles.header, {padding: 0, backgroundColor: "#36404a"}]}>
-                    <Input disabled={this.state.isCreatingNew} errorMessage={this.state.inputError != undefined ? this.state.inputError : undefined} errorStyle={{color: "#fc6560"}} autoCorrect={false} onSubmitEditing={(text) => this.createNewFileFolder(text.nativeEvent.text)} placeholder="Folder or file name" placeholderTextColor="#dedede" inputStyle={{color: "#FFF", fontSize: 14, padding: 0, margin: 0}} /> 
+                    <Input 
+                        leftIcon={
+                            <Icon
+                            name={this.state.newFileNameWriting != undefined && this.state.newFileNameWriting.split("/").splice(-1)[0].indexOf(".") != -1 ? "description" : this.state.newFileNameWriting != undefined && this.state.newFileNameWriting.length > 0 ? "folder" : "help-outline"}
+                            size={14}
+                            color='#dedede'
+                            style={{padding: 0, margin: 0}}
+                            />
+                        }
+                        disabled={this.state.isCreatingNew} errorMessage={this.state.inputError != undefined ? this.state.inputError : undefined} errorStyle={{color: "#fc6560"}} autoCorrect={false} onSubmitEditing={(text) => this.createNewFileFolder(text.nativeEvent.text)} placeholder="Folder or file name" placeholderTextColor="#dedede" onChangeText={(text) => this.setState({newFileNameWriting: text})} inputStyle={{color: "#FFF", fontSize: 14, padding: 0, margin: 0}} /> 
                 </View>}
                 <ScrollView horizontal={true}>
                     <ScrollView>

@@ -4,7 +4,7 @@ import Tabs from './tab'
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { makeRequest, CREATENETWORKURL } from '../helpers/networking';
 import { Button } from 'react-native-elements';
-
+import { skipFileTypes } from '../helpers/config.js';
 export default class Editor extends React.Component {
     constructor(props) {
         super(props);
@@ -139,6 +139,8 @@ export default class Editor extends React.Component {
     }
 
     saveFile = async () => {
+        if(skipFileTypes.indexOf(this.state.activeFile.file.split(".").splice(-1)) != -1) return;
+
         const file = this.state.activeFile.file;
         const contents = this.state.unformattedText.replace(/“|”/gm, '"').replace(/‘|’/gm, "'");
 
