@@ -1,4 +1,4 @@
-import { ENV } from '@env'
+const ENV = "dev"
 
 export const DEFAULTNETWORKINGURL = `https://api.${ENV != undefined && ENV == "dev" ? "test" : ""}go.prauxy.app`
 export const CREATENETWORKURL = (app) => `https://${app}.${ENV != undefined && ENV == "dev" ? "test" : ""}go.prauxy.app`;

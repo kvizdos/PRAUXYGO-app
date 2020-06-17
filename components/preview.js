@@ -3,6 +3,7 @@ import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { WebView } from 'react-native-webview';
 import Tabs from './tab'
 import { TextInput } from 'react-native-gesture-handler';
+import Inspector from './inspector'
 
 export default class WebPreview extends React.Component {    
     constructor(props) {
@@ -29,6 +30,11 @@ export default class WebPreview extends React.Component {
         const data = JSON.parse(e.nativeEvent.data)
         if(data.code == undefined) {
             this.setState({consoleMessages: [...this.state.consoleMessages, data]})
+        }
+
+        if(data.htmlUpdate) {
+            const html = decodeURI(data.htmlUpdate)
+            this.setState({currentHTML: html});
         }
     }
 
@@ -149,7 +155,7 @@ export default class WebPreview extends React.Component {
                     </View>
                     
                     {this.state.showInspector && <View>
-                            <Text>Inspector Enabled</Text>
+                        <Inspector html={this.state.currentHTML}></Inspector>
                     </View>}
                     {this.state.showConsole && <View style={styles.console}>
                         <ScrollView style={{flex: .9}} ref={ref => this.consoleHistory = ref } onContentSizeChange={() => this.consoleHistory.scrollToEnd({ animated: true })}>

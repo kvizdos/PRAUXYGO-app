@@ -5,6 +5,8 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { makeRequest, CREATENETWORKURL } from '../helpers/networking';
 import { Button } from 'react-native-elements';
 import { skipFileTypes } from '../helpers/config.js';
+import { stylize } from '../helpers/stylize';
+
 export default class Editor extends React.Component {
     constructor(props) {
         super(props);
@@ -42,7 +44,7 @@ export default class Editor extends React.Component {
             }).join("\n")});
 
             this.setState({formattedText: enteredText.toString().split("\n").map((i, key) => {
-                return <Text style={{lineHeight: 18, width: 10000}} numberOfLines={1} ellipsizeMode="head" key={key}>{i + (key == enteredText.split("\n").length - 1 ? "" : "\n")}</Text>
+                return <Text style={{lineHeight: 18, width: 10000}} numberOfLines={1} ellipsizeMode="head" key={key}>{stylize(i, key) + (key == enteredText.split("\n").length - 1 ? "" : "\n")}</Text>
             })});
 
         } 
@@ -95,8 +97,9 @@ export default class Editor extends React.Component {
 
         this.setState({measureMe: line.substring(0, lineStart)}, () => {        
             setTimeout(() => this.refs.measureMe.measure((fx, fy, width, height, px, py) => {
-                let scrollTo = width - (this.state.mainWidth - 65) > 0 ? width - (this.state.mainWidth - 35) + 50 : 0;
-                if(this.codeEditor != undefined) this.codeEditor.scrollTo({y: 0, x: scrollTo, animated: true});
+                let scrollToX = width - (this.state.mainWidth - 65) > 0 ? width - (this.state.mainWidth - 35) + 50 : 0;
+
+                if(this.codeEditor != undefined) this.codeEditor.scrollTo({y: 0, x: scrollToX, animated: true});
 
             }), 10)
 
@@ -113,6 +116,14 @@ export default class Editor extends React.Component {
             }    
             return lineNumbers;
         }
+        const renderHTML = (html) => {            
+            console.log("Restylizing")
+            let text = html.replace(/^<!-- PRAUXYGO DEPENENCY INJECTION, DO NOT TOUCH -->.*$\n/m, "").split("\n").map((i, key) => {
+                return stylize(i, key);
+            })
+    
+            return text;
+        }
 
         const files = props.openedTabs.filter(i => i.file != "none" && i.contents != "No file opened");
         const tabs = props.openedTabs.filter(i => i.file != "none" && i.contents != "No file opened").map(i => i.file);
@@ -124,6 +135,7 @@ export default class Editor extends React.Component {
             tabs: tabs,
             activeFile: file,
             formattedText: file.contents.toString().split("\n").map((i, key) => {
+                // return stylize(i, key, true, false);
                 return <Text style={{lineHeight: 18, width: 10000}} numberOfLines={1} ellipsizeMode="head" key={key}>{i + (key == file.contents.split("\n").length - 1 ? "" : "\n")}</Text>
             }),
             unformattedText: state.activeFile.file == ".html" && state.activeFile.contents == "No file selected" ? file.contents.toString().split("\n").map((i, key) => {
