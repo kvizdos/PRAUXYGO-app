@@ -24,6 +24,8 @@ export default class Tabs extends React.Component {
     }
 
     closeTab = (file, ignoreSaveWarning = false) => {
+        if(this.props.closeable != undefined) return;
+
         if(!ignoreSaveWarning && this.props.changedFiles().findIndex(i => i == file) != -1) {
             // this.props.openModal("This file is not saved.", "Please save this file before closing to make sure you don't lose any data.", {
             //     buttonLeft: "Save",
@@ -59,9 +61,9 @@ export default class Tabs extends React.Component {
                     return ( <TouchableHighlight key={key} underlayColor="#6b7d8f" key={key} onPress={() => this.setActiveTab(fileName)} style={[styles.container, {justifyContent: "center", backgroundColor: this.state.activeTab == fileName ? "#6b7d8f" : "#576878"}]}>
                         <View style={styles.tabContents}>
                             <Text ellipsizeMode='tail' style={{color: '#FFF'}} numberOfLines={1}>{[...fileName.split("/")].pop()}</Text>
-                            <TouchableHighlight onPress={() => this.closeTab(fileName)} style={{justifyContent: "center", padding: 0, margin: 0}}>
+                            {this.props.closeable == undefined && <TouchableHighlight onPress={() => this.closeTab(fileName)} style={{justifyContent: "center", padding: 0, margin: 0}}>
                                 {this.props.changedFiles != undefined && this.props.changedFiles().findIndex(i => i == fileName) == -1 ? <Text>&times;</Text> : <Text style={{fontSize: 21, padding: 0, margin: 0, marginTop: -2.5, color: "#FFF"}}>{`\u2022`}</Text>}
-                            </TouchableHighlight>
+                            </TouchableHighlight>}
                         </View> 
                     </TouchableHighlight> )
                 })}

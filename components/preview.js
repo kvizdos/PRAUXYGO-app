@@ -151,7 +151,7 @@ export default class WebPreview extends React.Component {
                 }}/>
                 {this.state.devToolsOpen && <View style={styles.devTools}>
                     <View style={{height: 40,backgroundColor: "#6c7782"}}>
-                        <Tabs tabs={["Inspector", "Console"]} openAction={this.changeInspector} closeAction={() => consolelog()}></Tabs>
+                        <Tabs tabs={["Inspector", "Console"]} openAction={this.changeInspector} closeable={false}></Tabs>
                     </View>
                     
                     {this.state.showInspector && <View>

@@ -19,7 +19,7 @@ export default class SplitView extends React.Component {
                 showing: true
             },
             bottom: {
-                showing: true,
+                showing: false,
                 height: windowHeight - (windowHeight / 4)
             },
             fileBrowser: {
@@ -38,7 +38,7 @@ export default class SplitView extends React.Component {
             <View style={styles.container}>
                 <View style={{padding: 8, backgroundColor: "#576878", width: 60, alignItems: 'center'}}>
                 {!this.state.isFullPreview && 
-                  <Icon style={{marginBottom: 15}} onPress={() => this.setState({fileBrowser: { showing: !this.state.fileBrowser.showing, width: this.state.fileBrowser.width }})} name="folder" size={40} color={this.state.fileBrowser.showing ? "#e8e8e8" : "#d4d4d4"} />}
+                  <Icon style={{marginBottom: 15}} onPress={() => this.setState({fileBrowser: { showing: !this.state.fileBrowser.showing, width: this.state.fileBrowser.width }})} name="folder" size={30} color={this.state.fileBrowser.showing ? "#e8e8e8" : "#d4d4d4"} />}
 
                     <Icon style={{marginBottom: 15}} onPress={() => {
                         if(!this.state.isFullPreview) {
@@ -46,11 +46,13 @@ export default class SplitView extends React.Component {
                             this.setState({fileBrowser: { showing: false, width: this.state.fileBrowser.width}, left: {showing: false, width: this.state.left.width}, bottom: {showing: false, height: this.state.bottom.height}})
                         } else {
                             this.setState({isFullPreview: false})
-                            this.setState({fileBrowser: { showing: false, width: this.state.fileBrowser.width}, left: {showing: true, width: this.state.left.width}, bottom: {showing: true, height: this.state.bottom.height}})
+                            this.setState({fileBrowser: { showing: false, width: this.state.fileBrowser.width}, left: {showing: true, width: this.state.left.width}, bottom: {showing: false, height: this.state.bottom.height}})
                         }
-                    }} name={!this.state.isFullPreview ? "web" : "arrow-back" } size={40} color="#e8e8e8" />
+                    }} name={!this.state.isFullPreview ? "web" : "arrow-back" } size={30} color="#e8e8e8" />
 
-                    <Icon style={{marginBottom: 15}} onPress={() => this.setState({devToolsOpen: !this.state.devToolsOpen})} name="build" size={30} color={this.state.isFullPreview ? "#e8e8e8" : "#d4d4d4"}></Icon>
+                    <Icon style={{marginBottom: 15}} onPress={() => this.setState({devToolsOpen: !this.state.devToolsOpen})} name="developer-mode" size={30} color={this.state.isFullPreview ? "#e8e8e8" : "#d4d4d4"}></Icon>
+
+                    {!this.state.isFullPreview && <Icon style={{marginBottom: 15}} onPress={() => this.setState({bottom: { showing: !this.state.bottom.showing, height: this.state.bottom.height }})} name="developer-board" size={30} color={this.state.isFullPreview ? "#e8e8e8" : "#d4d4d4"}></Icon>}
                 </View>
 
                 {this.state.fileBrowser.showing && <View style={{width: this.state.fileBrowser.width, flexDirection: "row", justifyContent: "space-between"}}>
@@ -69,7 +71,7 @@ export default class SplitView extends React.Component {
                 </View>}
 
                 <View style={{flex:1,flexDirection: "column"}}>
-                    <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={68} style={[styles.codeArea, {height: this.state.bottom.showing ? this.state.bottom.height - 25 : '100%', position: 'relative'}]}>
+                    <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={68} style={[styles.codeArea, {height: this.state.bottom.showing ? this.state.bottom.height - 25 - 45 : '100%', position: 'relative'}]}>
                         {this.state.left.showing && <View style={[styles.leftPane, {width: this.state.left.width}]}> 
                         {this.props.children[0]} 
                         </View>}
